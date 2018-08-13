@@ -16,4 +16,6 @@ public interface Constants {
     String loopTimes = "loopTimes";
     String loopInterval = "loopInterval";
     String removeCache = "removeCache";
+    String LogRoot = "HttpTools/log";
+    String FileProviderName = "dreamgo.http.tools.http.provider";
 }

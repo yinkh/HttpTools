@@ -1,38 +1,48 @@
 package dreamgo.http.tools.ui;
 
 import android.Manifest;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.FileProvider;
 import android.text.Selection;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.style.ForegroundColorSpan;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.RotateAnimation;
 import android.view.inputmethod.InputMethodManager;
+import android.webkit.MimeTypeMap;
 import android.webkit.URLUtil;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -212,13 +222,13 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
 
     /**
-     * 智能处理未添加 http:// 的情况
+     * 智能处理未添加 http:// 或 https:// 的情况
      *
      * @return
      */
     private String getUrl() {
         String URL = url.getText().toString();
-        if (URL.contains("http://"))
+        if (URL.contains("http://") || URL.contains("https://"))
             return URL;
         else
             return "http://" + URL;
@@ -234,11 +244,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         try {
             final String str_response = response.body().string();
 
-
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-
                     show.append("code:" + response.code() + "\n");
                     //先按JSONObject打印 无法打印按JSONArray打印 依旧无法打印则打印string
                     try {
@@ -665,6 +673,30 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 show.setText("");
                 showSnackBar(container, "已清屏");
                 break;
+            case R.id.menu_export:
+                String filename = Utils.getLogFilename() + ".txt";
+                final File log = saveLog(filename, show.getText().toString());
+                Snackbar.make(container, "文件已保存至 HttpTools/log/" + Utils.getLogFilename(), Snackbar.LENGTH_LONG)
+                        .setAction("打开", new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                //打开对应的txt文件
+                                Intent intent = new Intent(Intent.ACTION_VIEW);
+                                intent.addCategory("android.intent.category.DEFAULT");
+                                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                Uri uri = FileProvider.getUriForFile(context, Constants.FileProviderName, log);
+                                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                                intent.putExtra(Intent.EXTRA_STREAM, uri);
+                                intent.setDataAndType(uri, "application/*");
+                                if (intent.resolveActivity(getPackageManager()) != null)
+                                    startActivity(Intent.createChooser(intent, log.getName()));
+                                else
+                                    showToast("无打开文件的相应应用");
+                            }
+                        })
+                        .show();
+                break;
             case R.id.menu_setting:
                 startActivity(new Intent(MainActivity.this, SettingActivity.class));
                 break;
@@ -672,6 +704,32 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    /**
+     * 保存当前界面数据至txt
+     *
+     * @param filename
+     * @param data
+     * @return
+     */
+    public File saveLog(String filename, String data) {
+        try {
+            File path = Environment.getExternalStorageDirectory();
+            File dir = new File(path, Constants.LogRoot);
+            if (!dir.exists())
+                dir.mkdirs();
+
+            File plan = new File(dir.getAbsolutePath(), filename);
+            FileOutputStream fileOutputStream = new FileOutputStream(plan);
+            byte[] bytes = data.getBytes();
+            fileOutputStream.write(bytes);
+            fileOutputStream.close();
+            return plan;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override

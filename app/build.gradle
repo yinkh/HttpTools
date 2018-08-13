@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "dreamgo.http.tools"
         minSdkVersion 19
@@ -20,9 +20,9 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:24.1.1'
-    compile 'com.android.support:design:24.1.1'
-    compile 'com.squareup.okhttp3:okhttp:3.4.1'
-    compile files('libs/org.apache.http.legacy.jar')
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:24.2.1'
+    implementation 'com.android.support:design:24.2.1'
+    implementation 'com.squareup.okhttp3:okhttp:3.10.0'
+    implementation files('libs/org.apache.http.legacy.jar')
 }

@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">HttpTools</string>
+
+    <string name="menu_clear">清屏</string>
+    <string name="menu_export">导出</string>
+    <string name="menu_setting">设置</string>
+
 </resources>

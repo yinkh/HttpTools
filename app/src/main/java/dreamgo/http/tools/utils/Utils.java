@@ -6,6 +6,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 /**
  * Created by ykh on 2016/3/15.
  */
@@ -18,13 +22,10 @@ public class Utils {
         Toast.makeText(context, pMsg, Toast.LENGTH_SHORT).show();
     }
 
-    public static final void RemoveValue(Context context, String key) {
+    public static final Boolean RemoveValue(Context context, String key) {
         SharedPreferences.Editor editor = getSharedPreference(context).edit();
         editor.remove(key);
-        boolean result = editor.commit();
-        if (!result) {
-            Log.e("移除Shared", "save " + key + " failed");
-        }
+        return editor.commit();
     }
 
     private static final SharedPreferences getSharedPreference(Context context) {
@@ -36,16 +37,13 @@ public class Utils {
     }
 
     public static final Boolean getBooleanValue(Context context, String key) {
-//		Log.e("Http","Utils get:  "+key +" "+ getSharedPreference(context).getBoolean(key, false));
         return getSharedPreference(context).getBoolean(key, false);
     }
 
-    public static final void putBooleanValue(Context context, String key,
-                                             boolean bl) {
+    public static final Boolean putBooleanValue(Context context, String key, boolean bl) {
         SharedPreferences.Editor edit = getSharedPreference(context).edit();
         edit.putBoolean(key, bl);
-        edit.commit();
-//		Log.e("Http",key +" "+ bl);
+        return edit.commit();
     }
 
     /**
@@ -93,4 +91,23 @@ public class Utils {
         return getSharedPreference(context).contains(key);
     }
 
+    /**
+     * getCurrentTime
+     *
+     * @param format format
+     * @return Time
+     */
+    public static String getCurrentTime(String format) {
+        SimpleDateFormat sdf = new SimpleDateFormat(format, Locale.getDefault());
+        return sdf.format(new Date());
+    }
+
+    /**
+     * get CurrentTime
+     *
+     * @return "yyyy-MM-dd  HH:mm:ss"
+     */
+    public static String getLogFilename() {
+        return getCurrentTime("yyyyMMdd_HHmmss");
+    }
 }
