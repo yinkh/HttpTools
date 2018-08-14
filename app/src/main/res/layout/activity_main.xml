@@ -10,6 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#ffff"
+        android:gravity="center_vertical"
         android:orientation="vertical">
 
         <LinearLayout
@@ -23,16 +24,29 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:completionThreshold="1"
-                android:hint="url"
+                android:hint="@string/url"
                 android:maxLines="2"
                 android:popupBackground="@android:color/white"
                 android:textSize="15sp" />
 
             <Button
+                android:id="@+id/var"
+                android:layout_width="30dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/button_corner_light"
+                android:text="@string/var"
+                android:textSize="12sp"
+                android:textColor="@android:color/white" />
+
+            <Button
                 android:id="@+id/clear"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="重置" />
+                android:layout_width="60dp"
+                android:layout_height="30dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/button_corner_blue"
+                android:text="@string/clear"
+                android:textColor="@android:color/white" />
         </LinearLayout>
 
         <LinearLayout
@@ -42,11 +56,11 @@
 
             <dreamgo.http.tools.utils.ClearEditText
                 android:id="@+id/params_name"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:completionThreshold="1"
-                android:hint="params_name"
+                android:hint="@string/params_name"
                 android:maxLines="2"
                 android:popupBackground="@android:color/white"
                 android:textSize="15dp" />
@@ -58,55 +72,95 @@
 
             <dreamgo.http.tools.utils.ClearEditText
                 android:id="@+id/params_value"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:completionThreshold="1"
-                android:hint="params_value"
+                android:hint="@string/params_value"
                 android:maxLines="2"
                 android:popupBackground="@android:color/white"
                 android:textSize="15dp" />
 
             <Button
+                android:id="@+id/params_type"
+                android:layout_width="30dp"
+                android:layout_height="24dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/button_corner_light"
+                android:text="@string/params_file"
+                android:textSize="12sp"
+                android:textColor="@android:color/white" />
+
+            <Button
                 android:id="@+id/add"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="添加" />
+                android:layout_width="60dp"
+                android:layout_height="30dp"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/button_corner_blue"
+                android:text="@string/add"
+                android:textColor="@android:color/white" />
         </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="4">
+            android:weightSum="5">
 
             <Button
                 android:id="@+id/POST"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
                 android:layout_weight="1"
-                android:text="POST" />
+                android:background="@drawable/button_corner_blue"
+                android:text="@string/post"
+                android:textColor="@android:color/white" />
 
             <Button
                 android:id="@+id/GET"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
                 android:layout_weight="1"
-                android:text="GET" />
+                android:background="@drawable/button_corner_blue"
+                android:text="@string/get"
+                android:textColor="@android:color/white" />
 
             <Button
                 android:id="@+id/DELETE"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
                 android:layout_weight="1"
-                android:text="DEL" />
+                android:background="@drawable/button_corner_blue"
+                android:text="@string/del"
+                android:textColor="@android:color/white" />
 
             <Button
                 android:id="@+id/PUT"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
                 android:layout_weight="1"
-                android:text="PUT" />
+                android:background="@drawable/button_corner_blue"
+                android:text="@string/put"
+                android:textColor="@android:color/white" />
+
+            <Button
+                android:id="@+id/PATCH"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:layout_marginEnd="4dp"
+                android:layout_marginStart="4dp"
+                android:layout_weight="1"
+                android:background="@drawable/button_corner_blue"
+                android:text="@string/patch"
+                android:textColor="@android:color/white" />
         </LinearLayout>
 
         <ScrollView

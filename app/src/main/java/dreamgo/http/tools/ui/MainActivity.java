@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -35,6 +36,9 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.folderselector.FileChooserDialog;
+import com.afollestad.materialdialogs.folderselector.FolderChooserDialog;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,12 +60,15 @@ import dreamgo.http.tools.utils.Utils;
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.FormBody;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSink;
 
-public class MainActivity extends BaseActivity implements View.OnClickListener {
+public class MainActivity extends BaseActivity implements View.OnClickListener, FileChooserDialog.FileCallback {
     private Context context;
     private CoordinatorLayout container;
     private FloatingActionButton refresh;
@@ -69,9 +76,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     private ClearEditText url, paramsName, paramsValue;
     private ScrollView scroll_view;
     private TextView show;
-    private Button clear, add, POST, GET, DELETE, PUT;
+    private Button var, clear, type, add, POST, GET, DELETE, PUT, PATCH;
     private OkHttpClient client;
-    private FormBody.Builder builder;
+    private MultipartBody.Builder builder;
+    private File file;
+    private Boolean hasPart;
 
     private ArrayList<String> urls = new ArrayList<>();
     private ArrayList<String> names = new ArrayList<>();
@@ -192,12 +201,15 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         scroll_view = (ScrollView) findViewById(R.id.scroll_view);
         show = (TextView) findViewById(R.id.show);
 
+        var = (Button) findViewById(R.id.var);
         clear = (Button) findViewById(R.id.clear);
+        type = (Button) findViewById(R.id.params_type);
         add = (Button) findViewById(R.id.add);
         POST = (Button) findViewById(R.id.POST);
         GET = (Button) findViewById(R.id.GET);
         DELETE = (Button) findViewById(R.id.DELETE);
         PUT = (Button) findViewById(R.id.PUT);
+        PATCH = (Button) findViewById(R.id.PATCH);
 
         setAutoCompleteSource(urls, url);
         setAutoCompleteSource(names, paramsName);
@@ -205,19 +217,24 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     }
 
     private void setListener() {
+        var.setOnClickListener(this);
         clear.setOnClickListener(this);
+        type.setOnClickListener(this);
         add.setOnClickListener(this);
         POST.setOnClickListener(this);
         GET.setOnClickListener(this);
         DELETE.setOnClickListener(this);
         PUT.setOnClickListener(this);
+        PATCH.setOnClickListener(this);
         refresh.setOnClickListener(this);
     }
 
     private void initHttp() {
         show.setText("");
-        builder = new FormBody.Builder();
+        builder = new MultipartBody.Builder();
         client = new OkHttpClient();
+        file = null;
+        hasPart = false;
     }
 
 
@@ -332,21 +349,37 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                 collapseSoftInput();
                 showSnackBar(container, "已重置");
                 break;
+            case R.id.params_type:
+                new FileChooserDialog.Builder(this)
+                        .initialPath(Environment.getExternalStorageDirectory().getPath())  // changes initial path, defaults to external storage directory
+                        .mimeType("*/*") // Optional MIME type filter
+                        .show(this); // an AppCompatActivity which implements FileCallback
+                break;
             case R.id.add:
                 collapseSoftInput();
 
                 String name = paramsName.getText().toString();
                 String value = paramsValue.getText().toString();
-                // 检测是否需要MD5
-                if (Utils.hasValue(context, Constants.md5Field)) {
-                    if (name.equals(Utils.getValue(context, Constants.md5Field))
-                            && Utils.getBooleanValue(context, Constants.md5)) {
-                        value = DES.md5(value);
+                if (file == null) {
+                    // 检测是否需要MD5
+                    if (Utils.hasValue(context, Constants.md5Field)) {
+                        if (name.equals(Utils.getValue(context, Constants.md5Field))
+                                && Utils.getBooleanValue(context, Constants.md5)) {
+                            value = DES.md5(value);
+                        }
                     }
+
+                    builder.addFormDataPart(name, value);
+                } else {
+                    value = value + "(文件)";
+                    if (file.exists() && file.length() > 0) {
+                        builder.addFormDataPart(name, file.getName(),
+                                RequestBody.create(MediaType.parse("application/octet-stream"), file));
+                    }
+                    file = null;
                 }
 
-                builder.add(name, value);
-
+                hasPart = true;
                 // 缓存参数键值对
                 addSearchInput(names, paramsName);
                 addSearchInput(values, paramsValue);
@@ -444,7 +477,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
                 if (Utils.hasValue(context, Constants.sendLoop)) {
                     if (Utils.getBooleanValue(context, Constants.sendLoop)) {
-                        DELETE();
+                        PUT();
 
                         Handler handler1 = new Handler();
                         for (int i = 1; i < Utils.getIntValue(context, Constants.loopTimes); i++) {
@@ -462,6 +495,30 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     PUT();
                 }
                 break;
+            case R.id.PATCH:
+                current_method = "PATCH";
+                collapseSoftInput();
+
+                if (Utils.hasValue(context, Constants.sendLoop)) {
+                    if (Utils.getBooleanValue(context, Constants.sendLoop)) {
+                        PATCH();
+
+                        Handler handler1 = new Handler();
+                        for (int i = 1; i < Utils.getIntValue(context, Constants.loopTimes); i++) {
+                            handler1.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    PATCH();
+                                }
+                            }, Utils.getIntValue(context, Constants.loopInterval) * i);
+                        }
+                    } else {
+                        PATCH();
+                    }
+                } else {
+                    PATCH();
+                }
+                break;
             case R.id.refresh:
                 Animation animation = new RotateAnimation(0f, 360f, Animation.RELATIVE_TO_SELF, 0.5f,
                         Animation.RELATIVE_TO_SELF, 0.5f);
@@ -477,6 +534,21 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
     }
 
+    /**
+     * 获取RequestBody MultipartBody要求必填参数
+     *
+     * @return
+     */
+    private RequestBody getRequestBody() {
+        RequestBody requestBody;
+        if (hasPart) {
+            requestBody = builder.setType(MultipartBody.FORM).build();
+        } else {
+            FormBody.Builder builder = new FormBody.Builder();
+            requestBody = builder.build();
+        }
+        return requestBody;
+    }
 
     /**
      * POST请求
@@ -491,9 +563,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         addSearchInput(urls, url);
 
         //填充参数
-        RequestBody requestBody = builder.build();
         Request requestPost = new Request.Builder()
-                .post(requestBody)
+                .post(getRequestBody())
                 .url(getUrl())
                 .build();
         //判断是否使用Header
@@ -567,9 +638,11 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         }
 
         Utils.putValue(context, "url", url.getText().toString());
+        addSearchInput(urls, url);
+
         //填充参数
         Request requestDel = new Request.Builder()
-                .delete()
+                .delete(getRequestBody())
                 .url(getUrl())
                 .build();
         //判断是否使用Header
@@ -607,9 +680,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         addSearchInput(urls, url);
 
         //填充参数
-        RequestBody requestBody_put = builder.build();
         Request requestPut = new Request.Builder()
-                .put(requestBody_put)
+                .put(getRequestBody())
                 .url(getUrl())
                 .build();
         //判断是否使用Header
@@ -617,6 +689,45 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
         //POST请求
         client.newCall(requestPut).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, final IOException e) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        show.append("failure:" + e.toString() + "\n");
+                    }
+                });
+            }
+
+            @Override
+            public void onResponse(Call call, final Response response) throws IOException {
+                processResponse(response);
+            }
+        });
+    }
+
+    /**
+     * PATCH请求
+     */
+    private void PATCH() {
+        if (url.getText().toString().equals("") || !URLUtil.isValidUrl(getUrl())) {
+            url.setError("非法URL");
+            return;
+        }
+
+        Utils.putValue(context, "url", url.getText().toString());
+        addSearchInput(urls, url);
+
+        //填充参数
+        Request requestPatch = new Request.Builder()
+                .patch(getRequestBody())
+                .url(getUrl())
+                .build();
+        //判断是否使用Header
+        changeClientByHeader();
+
+        //POST请求
+        client.newCall(requestPatch).enqueue(new Callback() {
             @Override
             public void onFailure(Call call, final IOException e) {
                 runOnUiThread(new Runnable() {
@@ -651,6 +762,9 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
                     break;
                 case "PUT":
                     PUT();
+                    break;
+                case "PATCH":
+                    PATCH();
                     break;
                 default:
                     break;
@@ -775,5 +889,16 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
         }
+    }
+
+    @Override
+    public void onFileSelection(@NonNull FileChooserDialog dialog, @NonNull File file) {
+        paramsValue.setText(file.getName());
+        this.file = file;
+    }
+
+    @Override
+    public void onFileChooserDismissed(@NonNull FileChooserDialog dialog) {
+
     }
 }

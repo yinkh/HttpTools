@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.ActionBar;
+import android.text.InputType;
 import android.text.Selection;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,8 @@ import android.widget.CompoundButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
+
+import com.afollestad.materialdialogs.MaterialDialog;
 
 import java.io.File;
 
@@ -142,51 +145,60 @@ public class SettingActivity extends BaseActivity implements View.OnClickListene
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.setting_ll_header:
-                AlertDialog.Builder builder;
-                builder = new AlertDialog.Builder(this);
-                LayoutInflater inflater = getLayoutInflater();
-                View view = inflater.inflate(R.layout.dialog_two, null);
-                final ClearEditText headerName = (ClearEditText) view.findViewById(R.id.dialog_two_one);
-                final ClearEditText headerValue = (ClearEditText) view.findViewById(R.id.dialog_two_two);
-                headerName.setHint("headerName");
-                headerValue.setHint("headerValue");
-                headerName.setText(Utils.getValue(context, Constants.headerName));
-                headerValue.setText(Utils.getValue(context, Constants.headerValue));
-//                addHeader.setText("378da32d78c444ce4da2f90ed529b436b8a28429");
-                builder.setTitle("添加Header:");
-                builder.setPositiveButton("确定",
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                String name = headerName.getText().toString().trim();
-                                String value = headerValue.getText().toString().trim();
-                                if (!name.equals(""))
-                                    Utils.putValue(context, Constants.headerName, name);
-                                else
-                                    Utils.RemoveValue(context, Constants.headerName);
+//                new MaterialDialog.Builder(this)
+//                        .title("添加Header:")
+//                        .inputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)
+//                        .input("headerName", Utils.getValue(context, Constants.headerName), new MaterialDialog.InputCallback() {
+//                            @Override
+//                            public void onInput(MaterialDialog dialog, CharSequence input) {
+//                                // Do something
+//                            }
+//                        }).show();
 
-                                if (!value.equals(""))
-                                    Utils.putValue(context, Constants.headerValue, value);
-                                else
-                                    Utils.RemoveValue(context, Constants.headerValue);
-                                // 刷新显示
-                                initText();
-                            }
-                        });
-                builder.setNegativeButton("取消", null);
-                AlertDialog alertDialog = builder.create();
-                alertDialog.setView(view);
-                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
-                    @Override
-                    public void onShow(DialogInterface dialog) {
-                        //调出键盘
-                        InputMethodManager manager = ((InputMethodManager) context.getSystemService(INPUT_METHOD_SERVICE));
-                        manager.showSoftInput(headerName, InputMethodManager.SHOW_IMPLICIT);
-                        //光标移至末尾处
-                        Selection.setSelection(headerName.getText(), headerName.length());
-                    }
-                });
-                alertDialog.show();
+//                AlertDialog.Builder builder;
+//                builder = new AlertDialog.Builder(this);
+//                LayoutInflater inflater = getLayoutInflater();
+//                View view = inflater.inflate(R.layout.dialog_two, null);
+//                final ClearEditText headerName = (ClearEditText) view.findViewById(R.id.dialog_two_one);
+//                final ClearEditText headerValue = (ClearEditText) view.findViewById(R.id.dialog_two_two);
+//                headerName.setHint("headerName");
+//                headerValue.setHint("headerValue");
+//                headerName.setText(Utils.getValue(context, Constants.headerName));
+//                headerValue.setText(Utils.getValue(context, Constants.headerValue));
+//                builder.setTitle("添加Header:");
+//                builder.setPositiveButton("确定",
+//                        new DialogInterface.OnClickListener() {
+//                            @Override
+//                            public void onClick(DialogInterface dialog, int which) {
+//                                String name = headerName.getText().toString().trim();
+//                                String value = headerValue.getText().toString().trim();
+//                                if (!name.equals(""))
+//                                    Utils.putValue(context, Constants.headerName, name);
+//                                else
+//                                    Utils.RemoveValue(context, Constants.headerName);
+//
+//                                if (!value.equals(""))
+//                                    Utils.putValue(context, Constants.headerValue, value);
+//                                else
+//                                    Utils.RemoveValue(context, Constants.headerValue);
+//                                // 刷新显示
+//                                initText();
+//                            }
+//                        });
+//                builder.setNegativeButton("取消", null);
+//                AlertDialog alertDialog = builder.create();
+//                alertDialog.setView(view);
+//                alertDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+//                    @Override
+//                    public void onShow(DialogInterface dialog) {
+//                        //调出键盘
+//                        InputMethodManager manager = ((InputMethodManager) context.getSystemService(INPUT_METHOD_SERVICE));
+//                        manager.showSoftInput(headerName, InputMethodManager.SHOW_IMPLICIT);
+//                        //光标移至末尾处
+//                        Selection.setSelection(headerName.getText(), headerName.length());
+//                    }
+//                });
+//                alertDialog.show();
                 break;
             case R.id.setting_ll_md5:
                 AlertDialog.Builder builder_md5;
